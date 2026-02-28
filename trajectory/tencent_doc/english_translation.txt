@@ -1,0 +1,15 @@
+English translation of the problem: "请搜索并打开腾讯文档网页版，新建一个表格，第一行写入“姓名/学号/成绩”，并在第二行填入“张三/20240001/95”。创建完成后输出文档分享链接。":
+Please search for and open the web version of Tencent Docs, create a new spreadsheet, write “Name / Student ID / Score” in the first row, and fill in “Zhang San / 20240001 / 95” in the second row. After creating it, output the document’s share link.
+
+English translation of the problem: "帮我完成一个任务，任务的具体描述在音频文件/Users/zhangzhang/Downloads/AgentFactory/tencent_doc.mp3里面。":
+Help me complete a task. The detailed description of the task is in the audio file /Users/zhangzhang/Downloads/AgentFactory/tencent_doc.mp3.
+
+
+English translation of the answer: "已成功在腾讯文档网页版创建了一个在线表格，第一行填入了\"姓名/学号/成绩\"（分别在A1/B1/C1单元格），第二行填入了\"张三/20240001/95\"（分别在A2/B2/C2单元格），所有数据已验证正确。文档分享链接为：https://docs.qq.com/sheet/DWUd4WXRUbnBZUEVB":
+I have successfully created an online spreadsheet on the web version of Tencent Docs. The first row contains “Name / Student ID / Score” (in cells A1/B1/C1 respectively), and the second row contains “Zhang San / 20240001 / 95” (in cells A2/B2/C2 respectively). All data has been verified as correct. The document sharing link is: https://docs.qq.com/sheet/DWUd4WXRUbnBZUEVB
+
+English translation of the answer: "已成功在腾讯文档网页版创建了一个在线表格，第一行填入了\"姓名/学号/成绩\"（分别在A1/B1/C1单元格），第二行填入了\"已成功创建腾讯文档在线表格。第一行填入了\"班级/姓名/学号/成绩\"，第二行填入了\"一班/张三/2022020046/147\"，所有数据已验证正确。文档分享链接: https://docs.qq.com/sheet/DWUJQRFBZWFFudHpZ":
+An online spreadsheet has been successfully created in Tencent Docs. The first row contains “Class / Name / Student ID / Score”, and the second row contains “Class 1 / Zhang San / 2022020046 / 147”. All data has been verified as correct. Document sharing link: https://docs.qq.com/sheet/DWUJQRFBZWFFudHpZ
+
+English translation of the answer: "已成功完成音频中的任务。音频要求在腾讯文档网页版新建一个表格，第一行填入1、2、3、4，第二行填入5、6、7、8，第三行填入9、10、11、12。表格已创建并验证所有数据正确。分享链接: https://docs.qq.com/sheet/DWXNZdE1xWWxUZ3pw":
+The task described in the audio has been successfully completed. The audio required creating a new spreadsheet in the web version of Tencent Docs, entering 1, 2, 3, 4 in the first row, 5, 6, 7, 8 in the second row, and 9, 10, 11, 12 in the third row. The spreadsheet has been created and all data has been verified as correct. Share link: https://docs.qq.com/sheet/DWXNZdE1xWWxUZ3pw

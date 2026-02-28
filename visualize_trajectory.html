@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trajectory Visualizer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e0e0e0; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #1a1c2e, #2a2d4a); padding: 24px 32px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 22px; color: #7eb8ff; margin-bottom: 12px; }
+  .file-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .file-controls label { background: #2a5caa; color: #fff; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+  .file-controls label:hover { background: #3a6cba; }
+  .file-controls input[type="file"] { display: none; }
+  .file-name { color: #999; font-size: 13px; }
+
+  .meta-bar { background: #161822; padding: 16px 32px; border-bottom: 1px solid #222; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+  .meta-item { font-size: 13px; color: #aaa; }
+  .meta-item span { color: #7eb8ff; font-weight: 600; }
+
+  .question-box { background: #1a2236; margin: 20px 32px; padding: 20px 24px; border-radius: 10px; border-left: 4px solid #7eb8ff; }
+  .question-box .label { font-size: 12px; color: #7eb8ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .question-box .text { font-size: 15px; line-height: 1.7; white-space: pre-wrap; }
+
+  .answer-box { background: #1a2e1a; margin: 0 32px 20px; padding: 20px 24px; border-radius: 10px; border-left: 4px solid #5cb85c; }
+  .answer-box .label { font-size: 12px; color: #5cb85c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .answer-box .text { font-size: 15px; line-height: 1.7; white-space: pre-wrap; }
+
+  .timeline { padding: 20px 32px 60px; }
+
+  .iteration-group { margin-bottom: 8px; }
+  .iteration-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; user-select: none; }
+  .iteration-badge { background: #2a5caa; color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; min-width: 32px; text-align: center; }
+  .iteration-summary { font-size: 13px; color: #888; flex: 1; }
+  .iteration-toggle { color: #555; font-size: 18px; transition: transform 0.2s; }
+  .iteration-toggle.open { transform: rotate(90deg); }
+
+  .iteration-body { margin-left: 20px; border-left: 2px solid #2a2d4a; padding-left: 16px; }
+
+  .step { margin-bottom: 12px; border-radius: 8px; overflow: hidden; }
+
+  .step-llm { background: #1c2333; border: 1px solid #2a3a5c; }
+  .step-action { background: #1e2a1e; border: 1px solid #2a4a2a; }
+  .step-finish { background: #2a1e2a; border: 1px solid #4a2a4a; }
+
+  .step-header { padding: 10px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .step-header:hover { filter: brightness(1.1); }
+  .step-type { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 4px; }
+  .type-llm { background: #2a5caa33; color: #7eb8ff; }
+  .type-action { background: #2a8a2a33; color: #5cb85c; }
+  .type-finish { background: #8a2a8a33; color: #c87ecf; }
+
+  .step-preview { font-size: 13px; color: #888; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .step-expand { color: #555; font-size: 14px; }
+
+  .step-body { padding: 0 16px 14px; display: none; }
+  .step-body.open { display: block; }
+  .step-content { font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; max-height: 500px; overflow-y: auto; padding: 12px; background: #0002; border-radius: 6px; }
+  .step-content::-webkit-scrollbar { width: 6px; }
+  .step-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+  .action-tag { display: inline-block; background: #5cb85c22; color: #5cb85c; font-size: 12px; padding: 1px 8px; border-radius: 4px; font-family: monospace; }
+  .success-tag { color: #5cb85c; }
+  .error-tag { color: #d9534f; }
+
+  .result-section { margin-top: 8px; }
+  .result-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+
+  .empty-state { text-align: center; padding: 80px 32px; color: #555; }
+  .empty-state p { font-size: 16px; margin-bottom: 8px; }
+  .empty-state small { font-size: 13px; }
+
+  .action-name { font-family: monospace; color: #f0c674; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔍 Trajectory Visualizer</h1>
+  <div class="file-controls">
+    <label>Select Trajectory JSON File<input type="file" id="fileInput" accept=".json"></label>
+    <span class="file-name" id="fileName">No file selected</span>
+  </div>
+</div>
+
+<div id="content">
+  <div class="empty-state">
+    <p>Please select a trajectory JSON file to start visualization</p>
+    <small>Supports JSON files containing question / trajectory / final_answer fields</small>
+  </div>
+</div>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      render(data);
+    } catch(err) {
+      document.getElementById('content').innerHTML = `<div class="empty-state"><p style="color:#d9534f">JSON parsing failed: ${esc(err.message)}</p></div>`;
+    }
+  };
+  reader.readAsText(file);
+});
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function truncate(s, n) {
+  if (!s) return '';
+  s = s.replace(/\n/g, ' ').trim();
+  return s.length > n ? s.slice(0, n) + '…' : s;
+}
+
+function render(data) {
+  const traj = data.trajectory || [];
+  const question = data.question || '(None)';
+  const answer = data.final_answer || '(None)';
+  const totalIter = data.total_iterations || traj.length;
+  const timestamp = data.timestamp || '';
+
+  // Group by iteration
+  const groups = {};
+  for (const step of traj) {
+    const it = step.iteration || 0;
+    if (!groups[it]) groups[it] = [];
+    groups[it].push(step);
+  }
+
+  let html = '';
+
+  // Meta bar
+  html += `<div class="meta-bar">
+    <div class="meta-item">Total Iterations: <span>${totalIter}</span></div>
+    <div class="meta-item">Trajectory Steps: <span>${traj.length}</span></div>
+    ${timestamp ? `<div class="meta-item">Timestamp: <span>${timestamp}</span></div>` : ''}
+  </div>`;
+
+  // Question
+  html += `<div class="question-box"><div class="label">Question</div><div class="text">${esc(question)}</div></div>`;
+
+  // Final answer
+  html += `<div class="answer-box"><div class="label">Final Answer</div><div class="text">${esc(answer)}</div></div>`;
+
+  // Timeline
+  html += `<div class="timeline">`;
+
+  const iterKeys = Object.keys(groups).map(Number).sort((a,b) => a - b);
+
+  for (const it of iterKeys) {
+    const steps = groups[it];
+    // Build a short summary for this iteration
+    const actions = steps.map(s => {
+      if (s.type === 'llm_response') return 'LLM';
+      if (s.type === 'action') return s.action?.action || 'action';
+      if (s.type === 'finish') return 'finish';
+      return s.type;
+    });
+    const summary = actions.join(' → ');
+
+    html += `<div class="iteration-group">`;
+    html += `<div class="iteration-header" onclick="toggleIter(this)">
+      <span class="iteration-badge">${it}</span>
+      <span class="iteration-summary">${esc(summary)}</span>
+      <span class="iteration-toggle">▶</span>
+    </div>`;
+    html += `<div class="iteration-body" style="display:none;">`;
+
+    for (const step of steps) {
+      html += renderStep(step);
+    }
+
+    html += `</div></div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('content').innerHTML = html;
+
+  // Auto-expand all iterations for small trajectories
+  if (iterKeys.length <= 8) {
+    document.querySelectorAll('.iteration-header').forEach(h => toggleIter(h));
+  }
+}
+
+function renderStep(step) {
+  const type = step.type || 'unknown';
+  let cssClass = 'step-llm';
+  let typeLabel = type;
+  let typeCss = 'type-llm';
+  let preview = '';
+  let bodyHtml = '';
+
+  if (type === 'llm_response') {
+    cssClass = 'step-llm';
+    typeCss = 'type-llm';
+    typeLabel = 'LLM Response';
+    const content = step.content || '';
+    preview = truncate(content, 120);
+
+    // Parse out action tag if present
+    const actionMatch = content.match(/<action>(.*?)<\/action>/);
+    const paramsMatch = content.match(/<params>([\s\S]*?)<\/params>/);
+    let formatted = esc(content);
+    // Highlight action/params tags
+    formatted = formatted.replace(/&lt;action&gt;(.*?)&lt;\/action&gt;/g, '<span class="action-name">&lt;action&gt;$1&lt;/action&gt;</span>');
+    formatted = formatted.replace(/&lt;params&gt;([\s\S]*?)&lt;\/params&gt;/g, '<span style="color:#8abeb7">&lt;params&gt;$1&lt;/params&gt;</span>');
+
+    bodyHtml = `<div class="step-content">${formatted}</div>`;
+
+  } else if (type === 'action') {
+    cssClass = 'step-action';
+    typeCss = 'type-action';
+    const actionName = step.action?.action || 'unknown';
+    typeLabel = `Action: ${actionName}`;
+    const success = step.result?.success;
+    const successTag = success === true ? '<span class="success-tag">✓ success</span>' : success === false ? '<span class="error-tag">✗ failed</span>' : '';
+
+    preview = truncate(JSON.stringify(step.result || {}), 120);
+
+    let resultStr = '';
+    if (step.result) {
+      resultStr = JSON.stringify(step.result, null, 2);
+      // Truncate very long results for display
+      if (resultStr.length > 3000) {
+        resultStr = resultStr.slice(0, 3000) + '\n... (truncated)';
+      }
+    }
+
+    bodyHtml = `<div class="result-section">
+      <div class="result-label">Result ${successTag}</div>
+      <div class="step-content">${esc(resultStr)}</div>
+    </div>`;
+
+  } else if (type === 'finish') {
+    cssClass = 'step-finish';
+    typeCss = 'type-finish';
+    typeLabel = 'Finish';
+    const params = step.action?.params || {};
+    const result = step.result || {};
+    preview = truncate(params.answer || result.answer || '', 120);
+
+    let bodyContent = '';
+    if (params.answer) bodyContent += `Answer:\n${params.answer}\n\n`;
+    if (params.subagents && params.subagents.length > 0) {
+      bodyContent += `Saved Subagents:\n`;
+      for (const sa of params.subagents) {
+        bodyContent += `  - ${sa.entry_file}: ${sa.description}\n`;
+      }
+    }
+    if (result.message) bodyContent += `\nResult: ${result.message}`;
+
+    bodyHtml = `<div class="step-content">${esc(bodyContent)}</div>`;
+  } else {
+    preview = truncate(JSON.stringify(step), 120);
+    bodyHtml = `<div class="step-content">${esc(JSON.stringify(step, null, 2))}</div>`;
+  }
+
+  return `<div class="step ${cssClass}">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span class="step-type ${typeCss}">${esc(typeLabel)}</span>
+      <span class="step-preview">${esc(preview)}</span>
+      <span class="step-expand">▼</span>
+    </div>
+    <div class="step-body">${bodyHtml}</div>
+  </div>`;
+}
+
+function toggleIter(el) {
+  const body = el.nextElementSibling;
+  const arrow = el.querySelector('.iteration-toggle');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    arrow.classList.add('open');
+  } else {
+    body.style.display = 'none';
+    arrow.classList.remove('open');
+  }
+}
+
+function toggleStep(el) {
+  const body = el.nextElementSibling;
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+  } else {
+    body.classList.add('open');
+  }
+}
+
+// Auto-load from URL param or drag-drop
+document.body.addEventListener('dragover', e => { e.preventDefault(); });
+document.body.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.json')) {
+    document.getElementById('fileName').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try { render(JSON.parse(ev.target.result)); }
+      catch(err) { document.getElementById('content').innerHTML = `<div class="empty-state"><p style="color:#d9534f">JSON parsing failed: ${esc(err.message)}</p></div>`; }
+    };
+    reader.readAsText(file);
+  }
+});
+</script>
+</body>
+</html>

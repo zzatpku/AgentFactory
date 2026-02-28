@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta-Agent Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4a90d9;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container-fluid {
+            height: 100vh;
+            padding: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .conversation-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .conversation-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .conversation-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .conversation-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .conversation-item .question-preview {
+            font-size: 14px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .conversation-item .meta-info {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .conversation-item .status-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .status-running { background-color: #fff3cd; color: #856404; }
+        .status-waiting_confirm { background-color: #cce5ff; color: #004085; }
+        .status-finished { background-color: #d4edda; color: #155724; }
+        .status-cancelled { background-color: #e2e3e5; color: #383d41; }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-color);
+        }
+
+        .chat-header {
+            padding: 12px 20px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .chat-header-left {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .chat-header-left h4 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 16px;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .chat-header-left small {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .chat-header-right .badge {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        .chat-header-right .btn {
+            white-space: nowrap;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Message Styles */
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message-avatar.user {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .message-avatar.agent {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .message-avatar.system {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin-left: 10px;
+        }
+
+        .message-content {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .message.user .message-content {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .message.agent .message-content {
+            white-space: pre-wrap;
+            font-family: "Monaco", "Menlo", "Consolas", monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .message.system .message-content {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        /* Collapsible Steps */
+        .step-container {
+            margin-top: 10px;
+        }
+
+        .step-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .step-header {
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .step-header:hover {
+            background-color: #e9ecef;
+        }
+
+        .step-header .iteration-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .step-header .action-type {
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--secondary-color);
+        }
+
+        .step-content {
+            padding: 15px;
+            display: none;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .step-content.show {
+            display: block;
+        }
+
+        .step-content pre {
+            margin: 0;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .result-success { color: var(--success-color); }
+        .result-error { color: var(--danger-color); }
+
+        /* Input Area */
+        .input-area {
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
+        }
+
+        .btn-send {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-send:hover {
+            background-color: #357abd;
+        }
+
+        .btn-send:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+        }
+
+        .btn-continue {
+            padding: 8px 16px;
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-continue:hover {
+            background-color: #218838;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-screen h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .welcome-screen p {
+            color: var(--secondary-color);
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .new-chat-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.3);
+        }
+
+        /* Status indicators */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* Confirm Dialog */
+        .confirm-dialog {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .confirm-dialog h6 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .confirm-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .confirm-options button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-save { background-color: var(--success-color); color: white; }
+        .btn-discard { background-color: var(--danger-color); color: white; }
+        .btn-custom { background-color: var(--warning-color); color: #333; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--secondary-color);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Sidebar Tabs */
+        .sidebar-tabs {
+            display: flex;
+            gap: 2px;
+        }
+
+        .sidebar-tab {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--secondary-color);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab:hover {
+            background-color: #e9ecef;
+        }
+
+        .sidebar-tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Subagent List */
+        .subagent-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .subagent-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            background-color: #f8f9fa;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .subagent-item:hover {
+            background-color: #e9ecef;
+            border-color: var(--border-color);
+        }
+
+        .subagent-item .subagent-name {
+            font-size: 13px;
+            font-weight: 600;
+            font-family: monospace;
+            color: #333;
+        }
+
+        .subagent-item .subagent-desc {
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin-top: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* SKILL.md Modal */
+        .skill-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .skill-modal-overlay.show {
+            display: flex;
+        }
+
+        .skill-modal {
+            background: white;
+            border-radius: 12px;
+            width: 700px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .skill-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .skill-modal-header h5 {
+            margin: 0;
+            font-family: monospace;
+            font-size: 16px;
+        }
+
+        .skill-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .skill-modal-body pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .skill-modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--secondary-color);
+            padding: 0 5px;
+        }
+
+        .skill-modal-close:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-tabs">
+                        <button class="sidebar-tab active" id="tabHistory" onclick="switchSidebarTab('history')">
+                            <i class="bi bi-chat-square-text"></i> Conversations
+                        </button>
+                        <button class="sidebar-tab" id="tabSubagents" onclick="switchSidebarTab('subagents')">
+                            <i class="bi bi-cpu"></i> Subagents
+                        </button>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="showNewChat()">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+                <div class="conversation-list" id="conversationList">
+                    <!-- Conversation items will be loaded here -->
+                </div>
+                <div class="subagent-list" id="subagentList" style="display: none;">
+                    <!-- Subagent items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Welcome Screen (shown when no conversation) -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <i class="bi bi-robot" style="font-size: 64px; color: var(--primary-color);"></i>
+                    <h2>Meta-Agent Interface</h2>
+                    <p>Enter a task, and the agent will solve it step by step. Each step's output can be collapsed/expanded.</p>
+                    <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                        When done: 1 = save & finish / 2 = discard & finish / other = continue improving
+                    </p>
+                    <div style="margin-top: 30px; width: 100%; max-width: 600px;">
+                        <div style="display: flex; gap: 10px;">
+                            <textarea
+                                id="welcomeInput"
+                                rows="2"
+                                placeholder="Enter your task..."
+                                style="flex: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 14px; resize: none; font-family: inherit;"
+                                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();startFromWelcome();}"
+                            ></textarea>
+                            <button class="btn-send" onclick="startFromWelcome()">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat View (shown when conversation is active) -->
+                <div id="chatView" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="chat-header">
+                        <div class="chat-header-left">
+                            <h4 id="chatQuestion">Question</h4>
+                            <small class="text-muted" id="chatStatus">Running</small>
+                        </div>
+                        <div class="chat-header-right">
+                            <span id="iterationBadge" class="badge bg-primary">Iteration 0</span>
+                            <button class="btn btn-sm btn-outline-secondary" id="workspaceBtn" onclick="showWorkspace()" style="display: none;">
+                                <i class="bi bi-folder"></i> Files
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" id="cancelBtn" onclick="cancelRunning()" style="display: none;">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be rendered here -->
+                    </div>
+
+                    <!-- Confirm Dialog (shown when waiting for confirmation) -->
+                    <div class="confirm-dialog" id="confirmDialog" style="display: none;">
+                        <h6><i class="bi bi-exclamation-triangle"></i> Task Complete - Please Confirm</h6>
+                        <p style="margin: 0; font-size: 14px;">Final Answer: <strong id="finalAnswerPreview"></strong></p>
+                        <div class="confirm-options">
+                            <button class="btn-save" onclick="handleConfirm(1)">1. Save & Finish</button>
+                            <button class="btn-discard" onclick="handleConfirm(2)">2. Discard & Finish</button>
+                        </div>
+                        <p style="margin: 10px 0 5px; font-size: 13px; color: #666;">Or enter other input to continue:</p>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="input-area">
+                        <div class="input-group">
+                            <textarea
+                                id="messageInput"
+                                rows="2"
+                                placeholder="Enter your task or instruction..."
+                                onkeydown="handleKeyDown(event)"
+                            ></textarea>
+                            <button class="btn-send" id="sendBtn" onclick="sendMessage()">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                        <div id="continueBtnContainer" style="margin-top: 10px; display: none;">
+                            <button class="btn-continue" onclick="continueRunning()">
+                                <i class="bi bi-play-fill"></i> Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SKILL.md Modal -->
+    <div class="skill-modal-overlay" id="skillModal" onclick="if(event.target===this)closeSkillModal()">
+        <div class="skill-modal">
+            <div class="skill-modal-header">
+                <h5 id="skillModalTitle">SKILL.md</h5>
+                <button class="skill-modal-close" onclick="closeSkillModal()">&times;</button>
+            </div>
+            <div class="skill-modal-body">
+                <pre id="skillModalContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workspace Modal -->
+    <div class="skill-modal-overlay" id="workspaceModal" onclick="if(event.target===this)closeWorkspaceModal()">
+        <div class="skill-modal" style="width: 800px; max-height: 90vh;">
+            <div class="skill-modal-header">
+                <h5>Workspace Files</h5>
+                <button class="skill-modal-close" onclick="closeWorkspaceModal()">&times;</button>
+            </div>
+            <div class="skill-modal-body" id="workspaceContent" style="padding: 0;">
+                <div class="empty-state" id="workspaceEmpty"><i class="bi bi-folder"></i><p>No files in workspace</p></div>
+                <div id="workspaceFiles" style="display: none; padding: 15px;">
+                    <div id="workspaceFileList" style="margin-bottom: 15px;"></div>
+                    <div id="workspaceFileViewer" style="border-top: 1px solid var(--border-color); padding-top: 15px; max-height: 500px; overflow: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentConvId = null;
+        let currentQuestion = null;
+        let isLoading = false;
+        let isWaitingConfirm = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConversations();
+            loadSubagents();
+        });
+
+        // Load conversation list
+        async function loadConversations() {
+            try {
+                const response = await fetch('/api/conversations');
+                const data = await response.json();
+                renderConversationList(data.conversations);
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+
+        // Render conversation list
+        function renderConversationList(conversations) {
+            const list = document.getElementById('conversationList');
+
+            if (conversations.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="bi bi-chat"></i><p>No conversations yet</p></div>';
+                return;
+            }
+
+            let html = '';
+            conversations.forEach(conv => {
+                const statusClass = 'status-' + conv.status;
+                const statusText = {
+                    'running': 'Running',
+                    'waiting_confirm': 'Waiting',
+                    'finished': 'Finished'
+                }[conv.status] || conv.status;
+
+                html += `
+                    <div class="conversation-item ${conv.id === currentConvId ? 'active' : ''}"
+                         onclick="selectConversation('${conv.id}')">
+                        <div class="question-preview">${escapeHtml(conv.question)}</div>
+                        <div class="meta-info">
+                            ${formatDate(conv.created_at)}
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        // Start from welcome input
+        async function startFromWelcome() {
+            const input = document.getElementById('welcomeInput');
+            const question = input.value.trim();
+            if (!question) return;
+            input.value = '';
+            await startNewConversation(question);
+        }
+
+        // Show new chat (from sidebar button)
+        async function showNewChat() {
+            // Switch to welcome screen and focus input
+            document.getElementById('chatView').style.display = 'none';
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('welcomeInput').focus();
+            }, 100);
+        }
+
+        // Start a new conversation with a question
+        async function startNewConversation(question) {
+
+            isLoading = true;
+            currentQuestion = question;
+            updateSendButton();
+
+            // Immediately show chat view with user's question
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('chatView').style.display = 'flex';
+            document.getElementById('chatQuestion').textContent = question;
+            updateStatus('running');
+            updateCancelButton('running');
+
+            // Show user question with a loading indicator
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = `
+                <div class="message user">
+                    <div class="message-header">
+                        <div class="message-avatar user">U</div>
+                        <span class="message-sender">User</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(question)}</div>
+                </div>
+                <div class="message system">
+                    <div class="message-content">
+                        <span class="loading-spinner"></span> Agent is thinking...
+                    </div>
+                </div>
+            `;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000);
+
+                const response = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question: question}),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                currentConvId = data.conv_id;
+                renderConversation(data);
+                loadConversations();
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                isLoading = false;
+                updateSendButton();
+            }
+        }
+
+        // Select a conversation
+        async function selectConversation(convId) {
+            currentConvId = convId;
+            loadConversations();
+
+            try {
+                const response = await fetch('/api/conversation/' + convId);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                renderConversationData(data);
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+            }
+        }
+
+        // Render conversation from API response
+        function renderConversation(data) {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('chatView').style.display = 'flex';
+
+            document.getElementById('chatQuestion').textContent = data.question || 'New Conversation';
+            currentQuestion = data.question || currentQuestion;
+
+            updateStatus(data.status);
+            renderSteps(data.steps || [], currentQuestion);
+            updateIteration(data.steps ? data.steps.length : 0);
+            updateWorkspaceButton(data.status);
+
+            // Auto-continue if still running
+            if (data.status === 'running') {
+                // Auto continue after a short delay
+                setTimeout(() => {
+                    if (!isLoading && currentConvId) {
+                        continueRunning();
+                    }
+                }, 500);
+            } else if (data.status === 'waiting_confirm') {
+                showConfirmDialog(data.final_answer);
+            } else {
+                hideContinueButton();
+            }
+        }
+
+        // Render conversation data (from history or after continue)
+        function renderConversationData(data) {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('chatView').style.display = 'flex';
+
+            document.getElementById('chatQuestion').textContent = data.question || 'Conversation';
+            currentQuestion = data.question || currentQuestion;
+
+            updateStatus(data.status);
+            renderSteps(data.steps || [], currentQuestion);
+            updateIteration(data.steps ? data.steps.length : 0);
+            updateCancelButton(data.status);
+
+            if (data.status === 'finished' || data.status === 'cancelled') {
+                hideConfirmDialog();
+                hideContinueButton();
+            }
+
+            // Auto-continue if still running (for both initial and subsequent steps)
+            if (data.status === 'running') {
+                setTimeout(() => {
+                    if (!isLoading && currentConvId) {
+                        continueRunning();
+                    }
+                }, 500);
+            }
+        }
+
+        // Update status display
+        function updateStatus(status) {
+            const statusEl = document.getElementById('chatStatus');
+            const statusMap = {
+                'running': {text: 'Running', class: 'text-primary'},
+                'waiting_confirm': {text: 'Waiting', class: 'text-warning'},
+                'finished': {text: 'Finished', class: 'text-success'},
+                'cancelled': {text: 'Cancelled', class: 'text-secondary'},
+                'error': {text: 'Error', class: 'text-danger'}
+            };
+
+            const statusInfo = statusMap[status] || {text: status, class: 'text-muted'};
+            statusEl.textContent = statusInfo.text;
+            statusEl.className = statusInfo.class;
+        }
+
+        // Update iteration badge
+        function updateIteration(iter) {
+            document.getElementById('iterationBadge').textContent = 'Iteration ' + iter;
+        }
+
+        // Render steps
+        function renderSteps(steps, question) {
+            const container = document.getElementById('chatMessages');
+
+            let html = '';
+
+            // Show user's question as the first message
+            if (question) {
+                html += `
+                    <div class="message user">
+                        <div class="message-header">
+                            <div class="message-avatar user">U</div>
+                            <span class="message-sender">User</span>
+                        </div>
+                        <div class="message-content">${escapeHtml(question)}</div>
+                    </div>
+                `;
+            }
+
+            if (steps.length === 0) {
+                if (!question) {
+                    container.innerHTML = '<div class="message system"><div class="message-content">Waiting to start...</div></div>';
+                } else {
+                    html += `
+                        <div class="message system">
+                            <div class="message-content">
+                                <span class="loading-spinner"></span> Agent is thinking...
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML = html;
+                }
+                return;
+            }
+
+            let stepsHtml = '';
+
+            steps.forEach((step, index) => {
+                if (step.type === 'llm_response') {
+                    stepsHtml += `
+                        <div class="message agent">
+                            <div class="message-header">
+                                <div class="message-avatar agent">AI</div>
+                                <span class="message-sender">Agent</span>
+                                <span class="message-time">Iteration ${step.iteration}</span>
+                            </div>
+                            <div class="message-content">${escapeHtml(step.content || '')}</div>
+                        </div>
+                    `;
+                } else if (step.type === 'action') {
+                    const action = step.action || {};
+                    const actionType = action.action || 'unknown';
+                    const result = step.result || {};
+                    const isSuccess = result.success;
+                    const resultText = JSON.stringify(result, null, 2);
+
+                    stepsHtml += `
+                        <div class="step-container">
+                            <div class="step-item">
+                                <div class="step-header" onclick="toggleStep(this)">
+                                    <div>
+                                        <span class="iteration-badge">Iteration ${step.iteration}</span>
+                                        <span class="action-type">${actionType}</span>
+                                    </div>
+                                    <div>
+                                        <span class="${isSuccess ? 'result-success' : 'result-error'}">
+                                            ${isSuccess ? '✓' : '✗'}
+                                        </span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <div class="step-content">
+                                    <pre>${escapeHtml(resultText)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (step.type === 'finish' || step.type === 'waiting_confirm') {
+                    stepsHtml += `
+                        <div class="message system">
+                            <div class="message-header">
+                                <div class="message-avatar system">!</div>
+                                <span class="message-sender">System</span>
+                            </div>
+                            <div class="message-content">
+                                Task Complete! Final Answer: ${escapeHtml(step.final_answer || step.result?.answer || '')}
+                            </div>
+                        </div>
+                    `;
+                } else if (step.type === 'user_continue' || step.type === 'user_feedback') {
+                    stepsHtml += `
+                        <div class="message user">
+                            <div class="message-header">
+                                <div class="message-avatar user">U</div>
+                                <span class="message-sender">User</span>
+                            </div>
+                            <div class="message-content">${escapeHtml(step.user_input || '')}</div>
+                        </div>
+                    `;
+                } else if (step.type === 'finish_confirmed') {
+                    stepsHtml += `
+                        <div class="message system">
+                            <div class="message-header">
+                                <div class="message-avatar system">✓</div>
+                                <span class="message-sender">System</span>
+                            </div>
+                            <div class="message-content">${step.message || 'Operation complete'}</div>
+                        </div>
+                    `;
+                } else if (step.type === 'error') {
+                    stepsHtml += `
+                        <div class="message system" style="background-color: #f8d7da; border-color: #f5c6cb;">
+                            <div class="message-header">
+                                <div class="message-avatar" style="background-color: #dc3545;">!</div>
+                                <span class="message-sender">Error</span>
+                            </div>
+                            <div class="message-content">${escapeHtml(step.error || 'Unknown error')}</div>
+                        </div>
+                    `;
+                } else if (step.type === 'hallucination_detected') {
+                    stepsHtml += `
+                        <div class="message system" style="background-color: #fff3cd; border-color: #ffc107;">
+                            <div class="message-header">
+                                <div class="message-avatar" style="background-color: #ffc107; color: #333;">!</div>
+                                <span class="message-sender">Hallucination Detected</span>
+                                <span class="message-time">Iteration ${step.iteration}</span>
+                            </div>
+                            <div class="message-content" style="font-size: 13px;">Agent fabricated a &lt;response&gt; tag. Auto-retrying...</div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html + stepsHtml;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Toggle step content
+        function toggleStep(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.bi-chevron-down, .bi-chevron-up');
+
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                icon.classList.remove('bi-chevron-up');
+                icon.classList.add('bi-chevron-down');
+            } else {
+                content.classList.add('show');
+                icon.classList.remove('bi-chevron-down');
+                icon.classList.add('bi-chevron-up');
+            }
+        }
+
+        // Show confirm dialog
+        function showConfirmDialog(finalAnswer) {
+            isWaitingConfirm = true;
+            document.getElementById('confirmDialog').style.display = 'block';
+            document.getElementById('finalAnswerPreview').textContent = finalAnswer || 'None';
+            hideContinueButton();
+
+            // Auto scroll to confirm dialog
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Hide confirm dialog
+        function hideConfirmDialog() {
+            isWaitingConfirm = false;
+            document.getElementById('confirmDialog').style.display = 'none';
+        }
+
+        // Show continue button
+        function showContinueButton() {
+            document.getElementById('continueBtnContainer').style.display = 'block';
+        }
+
+        // Hide continue button
+        function hideContinueButton() {
+            document.getElementById('continueBtnContainer').style.display = 'none';
+        }
+
+        // Handle confirmation
+        async function handleConfirm(choice) {
+            const input = choice.toString();
+            await sendConfirmResponse(input);
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const userInput = input.value.trim();
+
+            if (!userInput || isLoading) return;
+
+            if (isWaitingConfirm) {
+                await sendConfirmResponse(userInput);
+                return;
+            }
+
+            // For regular running state, just add user input and continue
+            isLoading = true;
+            updateSendButton();
+            input.value = '';
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000);
+
+                const response = await fetch('/api/respond', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        conv_id: currentConvId,
+                        user_input: userInput
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                // Reload conversation
+                await selectConversation(currentConvId);
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                isLoading = false;
+                updateSendButton();
+            }
+        }
+
+        // Send confirm response
+        async function sendConfirmResponse(userInput) {
+            isLoading = true;
+            updateSendButton();
+
+            document.getElementById('messageInput').value = '';
+
+            try {
+                const response = await fetch('/api/respond', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        conv_id: currentConvId,
+                        user_input: userInput
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                // Reload conversation
+                await selectConversation(currentConvId);
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Error: ' + error.message + '\n\nSee console for details.');
+            } finally {
+                isLoading = false;
+                updateSendButton();
+            }
+        }
+
+        // Continue running
+        async function continueRunning() {
+            if (isLoading) return;
+
+            isLoading = true;
+            updateSendButton();
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 min timeout
+
+                const response = await fetch('/api/continue', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({conv_id: currentConvId}),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                await selectConversation(currentConvId);
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                isLoading = false;
+                updateSendButton();
+            }
+        }
+
+        // Cancel running
+        async function cancelRunning() {
+            if (!currentConvId) return;
+            if (!confirm('Are you sure you want to cancel the current run?')) return;
+
+            try {
+                const response = await fetch('/api/cancel/' + currentConvId, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await selectConversation(currentConvId);
+                }
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Show/hide cancel button
+        function updateCancelButton(status) {
+            const cancelBtn = document.getElementById('cancelBtn');
+            if (status === 'running') {
+                cancelBtn.style.display = 'inline-block';
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+            updateWorkspaceButton(status);
+        }
+
+        // Update send button state
+        function updateSendButton() {
+            const btn = document.getElementById('sendBtn');
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading-spinner"></span>Processing';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i> Send';
+            }
+        }
+
+        // Handle keyboard input
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Show history (refresh conversation list)
+        function showHistory() {
+            loadConversations();
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+
+            return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+        }
+
+        // Sidebar tab switching
+        function switchSidebarTab(tab) {
+            document.getElementById('tabHistory').classList.toggle('active', tab === 'history');
+            document.getElementById('tabSubagents').classList.toggle('active', tab === 'subagents');
+            document.getElementById('conversationList').style.display = tab === 'history' ? 'block' : 'none';
+            document.getElementById('subagentList').style.display = tab === 'subagents' ? 'block' : 'none';
+
+            if (tab === 'subagents') {
+                loadSubagents();
+            }
+        }
+
+        // Load subagents list
+        async function loadSubagents() {
+            try {
+                const response = await fetch('/api/subagents');
+                const data = await response.json();
+                renderSubagentList(data.subagents || []);
+            } catch (error) {
+                console.error('Error loading subagents:', error);
+            }
+        }
+
+        // Render subagent list
+        function renderSubagentList(subagents) {
+            const list = document.getElementById('subagentList');
+
+            if (subagents.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="bi bi-cpu"></i><p>No saved subagents</p></div>';
+                return;
+            }
+
+            let html = '';
+            subagents.forEach(sa => {
+                html += `
+                    <div class="subagent-item" onclick="viewSkillMd('${escapeHtml(sa.name)}')">
+                        <div class="subagent-name">${escapeHtml(sa.name)}</div>
+                        <div class="subagent-desc">${escapeHtml(sa.description)}</div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        // View SKILL.md
+        async function viewSkillMd(name) {
+            try {
+                const response = await fetch('/api/subagent/' + encodeURIComponent(name) + '/skill_md');
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                document.getElementById('skillModalTitle').textContent = data.name;
+                document.getElementById('skillModalContent').textContent = data.content;
+                document.getElementById('skillModal').classList.add('show');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Close SKILL.md modal
+        function closeSkillModal() {
+            document.getElementById('skillModal').classList.remove('show');
+        }
+
+        // Show workspace modal
+        async function showWorkspace() {
+            if (!currentConvId) return;
+
+            document.getElementById('workspaceModal').classList.add('show');
+            document.getElementById('workspaceEmpty').style.display = 'flex';
+            document.getElementById('workspaceFiles').style.display = 'none';
+            document.getElementById('workspaceFileViewer').innerHTML = '';
+
+            try {
+                const response = await fetch('/api/workspace/' + currentConvId);
+                const data = await response.json();
+
+                if (data.error) {
+                    document.getElementById('workspaceEmpty').innerHTML = '<i class="bi bi-folder"></i><p>' + data.error + '</p>';
+                    document.getElementById('workspaceEmpty').style.display = 'flex';
+                    return;
+                }
+
+                if (data.files.length === 0) {
+                    document.getElementById('workspaceEmpty').style.display = 'flex';
+                    return;
+                }
+
+                document.getElementById('workspaceEmpty').style.display = 'none';
+                document.getElementById('workspaceFiles').style.display = 'block';
+
+                const fileList = document.getElementById('workspaceFileList');
+                let html = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+                data.files.forEach(file => {
+                    const icon = file.type === 'image' ? '<i class="bi bi-image"></i>' : '<i class="bi bi-file-earmark-code"></i>';
+                    const btnClass = file.type === 'image' ? 'btn-outline-primary' : 'btn-outline-secondary';
+                    html += `<button class="btn btn-sm ${btnClass}" onclick="viewWorkspaceFile('${escapeHtml(file.path)}', '${file.type}')" style="display: flex; align-items: center; gap: 4px;">
+                        ${icon} ${escapeHtml(file.name)}
+                    </button>`;
+                });
+                html += '</div>';
+                fileList.innerHTML = html;
+
+            } catch (error) {
+                document.getElementById('workspaceEmpty').innerHTML = '<i class="bi bi-folder"></i><p>Error: ' + error.message + '</p>';
+            }
+        }
+
+        // View workspace file
+        async function viewWorkspaceFile(path, type) {
+            try {
+                const response = await fetch('/api/workspace/' + currentConvId + '/file?path=' + encodeURIComponent(path));
+                const data = await response.json();
+
+                const viewer = document.getElementById('workspaceFileViewer');
+
+                if (data.error) {
+                    viewer.innerHTML = '<p class="text-danger">Error: ' + data.error + '</p>';
+                    return;
+                }
+
+                if (data.type === 'image') {
+                    viewer.innerHTML = `<div style="text-align: center;">
+                        <p style="margin-bottom: 10px; font-weight: 500;">${escapeHtml(data.filename)}</p>
+                        <img src="${data.data}" style="max-width: 100%; max-height: 400px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    </div>`;
+                } else {
+                    viewer.innerHTML = `<div>
+                        <p style="margin-bottom: 10px; font-weight: 500;">${escapeHtml(data.filename)}</p>
+                        <pre style="background: #f5f5f5; padding: 10px; border-radius: 8px; max-height: 400px; overflow: auto; font-size: 12px;">${escapeHtml(data.content)}</pre>
+                    </div>`;
+                }
+
+            } catch (error) {
+                document.getElementById('workspaceFileViewer').innerHTML = '<p class="text-danger">Error: ' + error.message + '</p>';
+            }
+        }
+
+        // Close workspace modal
+        function closeWorkspaceModal() {
+            document.getElementById('workspaceModal').classList.remove('show');
+        }
+
+        // Show workspace button based on conversation status
+        function updateWorkspaceButton(status) {
+            const btn = document.getElementById('workspaceBtn');
+            if (status === 'running' || status === 'waiting_confirm' || status === 'finished') {
+                btn.style.display = 'inline-block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSkillModal();
+                closeWorkspaceModal();
+            }
+        });
+    </script>
+</body>
+</html>

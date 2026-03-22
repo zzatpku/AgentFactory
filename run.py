@@ -16,7 +16,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Meta-Agent for solving questions")
-    parser.add_argument("--question-file", default="data/notes_question.jsonl", help="Path to question file")
+    parser.add_argument("--question-file", default="data/questions/questions_round1.jsonl", help="Path to question file")
     parser.add_argument("--no-save", action="store_true", default=False,
                         help="Do not save subagent on finish")
     parser.add_argument("--human-confirm", action="store_true", default=False,

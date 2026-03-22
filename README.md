@@ -92,22 +92,22 @@ Browser-based tasks (e.g., web automation via Playwright) require Google Chrome.
 
 ### 5. Replace Placeholder Paths
 
-In `data/questions_round1.jsonl` and `data/questions_round2.jsonl`, replace all occurrences of `<Absolute_Path_to_AgentFactory>` with the actual absolute path to this directory. For example:
+In `data/questions/questions_round1.jsonl` and `data/questions/questions_round2.jsonl`, replace all occurrences of `<Absolute_Path_to_AgentFactory>` with the actual absolute path to this directory. For example:
 
 ```txt
-<Absolute_Path_to_AgentFactory>/qq_music_taylor.mp3
+<Absolute_Path_to_AgentFactory>/data/audio/qq_music_taylor.mp3
 ```
 
 should become:
 
 ```txt
-/home/user/AgentFactory/qq_music_taylor.mp3
+/home/user/AgentFactory/data/audio/qq_music_taylor.mp3
 ```
 
 ## Running Tests
 
 ```bash
-python run.py --question-file data/questions_round1.jsonl
+python run.py --question-file data/questions/questions_round1.jsonl
 ```
 
 Optional flags:
@@ -132,7 +132,7 @@ Help me complete a task. The detailed description of the task is in the audio fi
 For example, using the included sample audio:
 
 ```txt
-Help me complete a task. The detailed description of the task is in the audio file /home/user/AgentFactory/tencent_doc_en.mp3
+Help me complete a task. The detailed description of the task is in the audio file /home/user/AgentFactory/data/audio/tencent_doc_en.mp3
 ```
 
 Replace the path with the actual absolute path to the audio file on your machine.

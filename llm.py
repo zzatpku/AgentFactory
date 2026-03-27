@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-model_choice = "minimax"
+protocol = os.getenv("MODEL_PROTOCOL", "OPENAI_STYLE")
 
 # Configuration
 LLM_URL_CLAUDE = os.getenv("LLM_URL_CLAUDE")
@@ -19,17 +19,12 @@ LLM_URL_MINIMAX = os.getenv("LLM_URL_MINIMAX")
 LLM_API_KEY_MINIMAX = os.getenv("LLM_API_KEY_MINIMAX")
 LLM_MODEL_MINIMAX = os.getenv("LLM_MODEL_MINIMAX", "MiniMax-M2.7")
 
-client_claude = OpenAI(
-    api_key=LLM_API_KEY_CLAUDE,
-    base_url=LLM_URL_CLAUDE
-)
-
-client_minimax = OpenAI(
+client_openai = OpenAI(
     api_key=LLM_API_KEY_MINIMAX,
     base_url=LLM_URL_MINIMAX
 )
 
-def call_llm_claude(
+def call_llm_anthropic(
     system: str,
     messages: List[Dict[str, str]],
     max_tokens: int = 8000,
@@ -92,7 +87,7 @@ def call_llm_claude(
             else:
                 return f"Error: {str(e)}"
 
-def call_llm_minimax(
+def call_llm_openai(
     system: str,
     messages: List[Dict[str, str]],
     max_tokens: int = 8000,
@@ -107,7 +102,7 @@ def call_llm_minimax(
 
     for attempt in range(max_retries):
         try:
-            response = client_minimax.chat.completions.create(
+            response = client_openai.chat.completions.create(
                 model=LLM_MODEL_MINIMAX,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -130,9 +125,9 @@ def call_llm(
     max_tokens: int = 100000,
     max_retries: int = 600
 ) -> str:
-    if model_choice == "minimax":
-        return call_llm_minimax(system, messages, max_tokens, max_retries)
-    elif model_choice == "claude":
-        return call_llm_claude(system, messages, max_tokens, max_retries)
+    if protocol == "OPENAI_STYLE":
+        return call_llm_openai(system, messages, max_tokens, max_retries)
+    elif protocol == "ANTHROPIC_STYLE":
+        return call_llm_anthropic(system, messages, max_tokens, max_retries)
     else:
-        raise ValueError(f"Unsupported model choice: {model_choice}")
+        raise ValueError(f"Unsupported model choice: {protocol}")

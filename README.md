@@ -64,6 +64,9 @@ pip install openai requests playwright flask flask_cors
 Edit `.env` file and fill in your API keys:
 
 ```bash
+# Model Selection (OPENAI_STYLE or ANTHROPIC_STYLE)
+MODEL_PROTOCOL=OPENAI_STYLE
+
 # Claude API
 LLM_URL_CLAUDE=https://your-api-endpoint/v1
 LLM_API_KEY_CLAUDE=your-claude-api-key
@@ -79,7 +82,7 @@ SERPER_API_KEY=your-serper-api-key   # Get from https://serper.dev
 JINA_API_KEY=your-jina-api-key       # Get from https://jina.ai
 ```
 
-Switch between models by changing `model_choice` in `llm.py`.
+Switch between models by changing `MODEL_PROTOCOL` in `.env` (options: `OPENAI_STYLE` or `ANTHROPIC_STYLE`).
 
 ### 3. Install Chrome
 

@@ -59,38 +59,33 @@ conda activate agentfactory
 pip install openai requests playwright flask flask_cors
 ```
 
-### 2. Configure API Key
+### 2. Configure API Keys
 
-Edit `llm.py` and set your API key and model configuration:
+Edit `.env` file and fill in your API keys:
 
-```python
-# For Claude
-LLM_URL_CLAUDE = "https://your-api-endpoint/v1"
-LLM_API_KEY_CLAUDE = "your-api-key"
-LLM_MODEL_CLAUDE = "claude-opus-4-6"
+```bash
+# Claude API
+LLM_URL_CLAUDE=https://your-api-endpoint/v1
+LLM_API_KEY_CLAUDE=your-claude-api-key
+LLM_MODEL_CLAUDE=claude-opus-4-6
 
-# For MiniMax (local or remote)
-LLM_URL_MINIMAX = "https://your-api-endpoint/v1"
-LLM_API_KEY_MINIMAX = "your-api-key"
-LLM_MODEL_MINIMAX = "MiniMax-M2.5"
+# MiniMax API
+LLM_URL_MINIMAX=https://api.minimaxi.com/v1
+LLM_API_KEY_MINIMAX=your-minimax-api-key
+LLM_MODEL_MINIMAX=MiniMax-M2.7
+
+# Tool APIs
+SERPER_API_KEY=your-serper-api-key   # Get from https://serper.dev
+JINA_API_KEY=your-jina-api-key       # Get from https://jina.ai
 ```
 
-Switch between models by changing `model_choice` at the top of `llm.py`.
+Switch between models by changing `model_choice` in `llm.py`.
 
-### 3. Configure Tool API Keys
-
-Edit `tools.py` and set your API keys for web search and page reading:
-
-```python
-SERPER_API_KEY = "your-serper-api-key"   # Get from https://serper.dev
-JINA_API_KEY = "your-jina-api-key"       # Get from https://jina.ai
-```
-
-### 4. Install Chrome
+### 3. Install Chrome
 
 Browser-based tasks (e.g., web automation via Playwright) require Google Chrome. Make sure Chrome is installed on your machine before running these tasks.
 
-### 5. Replace Placeholder Paths
+### 4. Replace Placeholder Paths
 
 In `data/questions/questions_round1.jsonl` and `data/questions/questions_round2.jsonl`, replace all occurrences of `<Absolute_Path_to_AgentFactory>` with the actual absolute path to this directory. For example:
 

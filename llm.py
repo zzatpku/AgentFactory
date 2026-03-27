@@ -4,17 +4,20 @@ import time
 from typing import List, Dict
 from openai import OpenAI
 import requests
+from dotenv import load_dotenv
 
-model_choice = "claude"
+load_dotenv()
+
+model_choice = "minimax"
 
 # Configuration
-LLM_URL_CLAUDE = os.getenv("LLM_URL", "<Your LLM API URL Here>")
-LLM_API_KEY_CLAUDE = os.getenv("LLM_API_KEY", "<Your LLM API Key Here>")
-LLM_MODEL_CLAUDE = os.getenv("LLM_MODEL", "claude-opus-4-6")
+LLM_URL_CLAUDE = os.getenv("LLM_URL_CLAUDE")
+LLM_API_KEY_CLAUDE = os.getenv("LLM_API_KEY_CLAUDE")
+LLM_MODEL_CLAUDE = os.getenv("LLM_MODEL_CLAUDE", "claude-opus-4-6")
 
-LLM_URL_MINIMAX = os.getenv("LLM_URL", "<Your LLM API URL Here>")
-LLM_API_KEY_MINIMAX = os.getenv("LLM_API_KEY", "<Your LLM API Key Here>")
-LLM_MODEL_MINIMAX = os.getenv("LLM_MODEL", "MiniMax-M2.5")
+LLM_URL_MINIMAX = os.getenv("LLM_URL_MINIMAX")
+LLM_API_KEY_MINIMAX = os.getenv("LLM_API_KEY_MINIMAX")
+LLM_MODEL_MINIMAX = os.getenv("LLM_MODEL_MINIMAX", "MiniMax-M2.7")
 
 client_claude = OpenAI(
     api_key=LLM_API_KEY_CLAUDE,

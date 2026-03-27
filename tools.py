@@ -22,9 +22,12 @@ import subprocess
 import re
 import json
 import http
+from dotenv import load_dotenv
 
-SERPER_API_KEY = "<Your Serper API Key Here>"  # Replace with your Serper API Key
-JINA_API_KEY = "<Your Jina API Key Here>"  # Replace with your Jina API Key
+load_dotenv()
+
+SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+JINA_API_KEY = os.getenv("JINA_API_KEY")
 
 def read_url_jina(url: str) -> str:
     """

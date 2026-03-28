@@ -74,9 +74,23 @@ def run_python_file(path: str, question: str = "", timeout: int = 600, work_dir:
     """
     import importlib.util
     import signal
+    from dotenv import load_dotenv
 
     if not os.path.exists(path):
         return {"success": False, "error": f"File not found: {path}"}
+
+    # Switch to subagent environment variables
+    load_dotenv()
+    original_env = {
+        "LLM_URL": os.environ.get("LLM_URL"),
+        "LLM_API_KEY": os.environ.get("LLM_API_KEY"),
+        "LLM_MODEL": os.environ.get("LLM_MODEL"),
+        "LLM_PROTOCOL": os.environ.get("LLM_PROTOCOL")
+    }
+    os.environ["LLM_URL"] = os.getenv("SUBAGENT_URL", "")
+    os.environ["LLM_API_KEY"] = os.getenv("SUBAGENT_API_KEY", "")
+    os.environ["LLM_MODEL"] = os.getenv("SUBAGENT_MODEL", "")
+    os.environ["LLM_PROTOCOL"] = os.getenv("SUBAGENT_PROTOCOL", "OPENAI_STYLE")
 
     # Ensure SCRIPT_DIR is on sys.path so subagent can import tools, llm, etc.
     if SCRIPT_DIR not in sys.path:
@@ -135,6 +149,12 @@ def run_python_file(path: str, question: str = "", timeout: int = 600, work_dir:
         return {"success": False, "error": f"{type(e).__name__}: {e}\n{traceback.format_exc()}"}
     finally:
         os.chdir(original_cwd)
+        # Restore meta agent environment variables
+        for key, value in original_env.items():
+            if value is not None:
+                os.environ[key] = value
+            elif key in os.environ:
+                del os.environ[key]
 
 
 def _get_skill_entry_file(skill_name: str) -> Optional[str]:

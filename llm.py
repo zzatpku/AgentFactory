@@ -4,25 +4,17 @@ import time
 from typing import List, Dict
 from openai import OpenAI
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
 
-protocol = os.getenv("MODEL_PROTOCOL", "OPENAI_STYLE")
+def _get_config():
+    """Read LLM config from environment variables at call time."""
+    return {
+        "url": os.environ.get("LLM_URL", ""),
+        "api_key": os.environ.get("LLM_API_KEY", ""),
+        "model": os.environ.get("LLM_MODEL", ""),
+        "protocol": os.environ.get("LLM_PROTOCOL", "OPENAI_STYLE"),
+    }
 
-# Configuration
-LLM_URL_CLAUDE = os.getenv("LLM_URL_CLAUDE")
-LLM_API_KEY_CLAUDE = os.getenv("LLM_API_KEY_CLAUDE")
-LLM_MODEL_CLAUDE = os.getenv("LLM_MODEL_CLAUDE", "claude-opus-4-6")
-
-LLM_URL_MINIMAX = os.getenv("LLM_URL_MINIMAX")
-LLM_API_KEY_MINIMAX = os.getenv("LLM_API_KEY_MINIMAX")
-LLM_MODEL_MINIMAX = os.getenv("LLM_MODEL_MINIMAX", "MiniMax-M2.7")
-
-client_openai = OpenAI(
-    api_key=LLM_API_KEY_MINIMAX,
-    base_url=LLM_URL_MINIMAX
-)
 
 def call_llm_anthropic(
     system: str,
@@ -31,13 +23,14 @@ def call_llm_anthropic(
     max_retries: int = 5
 ) -> str:
     """Call the LLM API using streaming to avoid proxy timeout."""
+    cfg = _get_config()
     headers = {
         "Content-Type": "application/json",
-        "x-api-key": LLM_API_KEY_CLAUDE,
+        "x-api-key": cfg["api_key"],
         "anthropic-version": "2023-06-01"
     }
     data = {
-        "model": LLM_MODEL_CLAUDE,
+        "model": cfg["model"],
         "max_tokens": max_tokens,
         "system": [{"type": "text", "text": system}],
         "messages": messages,
@@ -46,7 +39,7 @@ def call_llm_anthropic(
     for attempt in range(max_retries):
         try:
             response = requests.post(
-                LLM_URL_CLAUDE + "/messages",
+                cfg["url"] + "/messages",
                 headers=headers,
                 json=data,
                 timeout=60,
@@ -81,7 +74,7 @@ def call_llm_anthropic(
         except Exception as e:
             if attempt < max_retries - 1:
                 wait = 2 ** attempt
-                wait = min(wait, 60)  # Cap the wait time to avoid excessively long delays
+                wait = min(wait, 60)
                 print(f"[LLM] Attempt {attempt + 1} failed: {e}. Retrying in {wait}s...")
                 time.sleep(wait)
             else:
@@ -95,6 +88,8 @@ def call_llm_openai(
     temperature: float = 1.0,
     top_p: float = 0.95
 ) -> str:
+    cfg = _get_config()
+    client = OpenAI(api_key=cfg["api_key"], base_url=cfg["url"])
     all_messages = []
     if system:
         all_messages.append({"role": "system", "content": system})
@@ -102,8 +97,8 @@ def call_llm_openai(
 
     for attempt in range(max_retries):
         try:
-            response = client_openai.chat.completions.create(
-                model=LLM_MODEL_MINIMAX,
+            response = client.chat.completions.create(
+                model=cfg["model"],
                 max_tokens=max_tokens,
                 temperature=temperature,
                 top_p=top_p,
@@ -113,21 +108,22 @@ def call_llm_openai(
         except Exception as e:
             if attempt < max_retries - 1:
                 wait = 2 ** attempt
-                wait = min(wait, 60)  # Cap the wait time to avoid excessively long delays
+                wait = min(wait, 60)
                 print(f"[LLM] Attempt {attempt + 1} failed: {e}. Retrying in {wait}s...")
                 time.sleep(wait)
             else:
                 return f"Error: {str(e)}"
-           
+
 def call_llm(
     system: str,
     messages: List[Dict[str, str]],
     max_tokens: int = 100000,
     max_retries: int = 600
 ) -> str:
-    if protocol == "OPENAI_STYLE":
+    cfg = _get_config()
+    if cfg["protocol"] == "OPENAI_STYLE":
         return call_llm_openai(system, messages, max_tokens, max_retries)
-    elif protocol == "ANTHROPIC_STYLE":
+    elif cfg["protocol"] == "ANTHROPIC_STYLE":
         return call_llm_anthropic(system, messages, max_tokens, max_retries)
     else:
-        raise ValueError(f"Unsupported model choice: {protocol}")
+        raise ValueError(f"Unsupported protocol: {cfg['protocol']}")

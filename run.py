@@ -6,6 +6,16 @@ Now with Skills support - all actions are unified as skills.
 import json
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load .env configuration
+load_dotenv()
+
+# Set runtime environment variables for meta agent
+os.environ["LLM_URL"] = os.getenv("META_AGENT_URL", "")
+os.environ["LLM_API_KEY"] = os.getenv("META_AGENT_API_KEY", "")
+os.environ["LLM_MODEL"] = os.getenv("META_AGENT_MODEL", "")
+os.environ["LLM_PROTOCOL"] = os.getenv("META_AGENT_PROTOCOL", "OPENAI_STYLE")
 
 # Get absolute paths based on script location
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

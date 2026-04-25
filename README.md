@@ -113,6 +113,10 @@ Optional flags:
 - `--human-confirm` — pause for human confirmation when finishing
 - `--no-save` — do not save subagent skills after completion
 
+## Deploy to Claude Code
+
+`prompt4cc.txt` is a ready-to-use prompt for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). To deploy the saved subagents to Claude Code, simply paste the content of `prompt4cc.txt` into Claude Code and replace `<Absolute_Path_to_AgentFactory>` with the actual absolute path to this directory. For example, if your project is at `/home/user/AgentFactory`, replace all occurrences accordingly. Claude Code will then be able to read the subagent code and use them to solve tasks.
+
 ## Web Demo
 
 Start the web server:

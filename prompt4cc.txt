@@ -1,0 +1,13 @@
+Please read <Absolute_Path_to_AgentFactory>/prompts.py to understand how the agent system works.
+Currently, this agent has already been run and has generated several subagents under the directory <Absolute_Path_to_AgentFactory>/skills/subagents. You can run these subagents to solve problems, but you should first read the corresponding SKILL.md file and the related Python code of each subagent to understand how to use them before running the code.
+
+Method for calling a subagent:
+
+from meta_tools import run_skill
+
+# Run the subagent named "xxx" and pass in your query
+result = run_skill('subagent_name', 'your specific task description')
+answer = result.get('answer', '')   # Get the answer
+summary = result.get('summary', '') # Get the process summary
+
+Now please solve the problem in <Absolute_Path_to_AgentFactory>/data/questions/tencent_doc_audio.jsonl.

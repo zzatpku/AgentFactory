@@ -1,13 +1,19 @@
 # AgentFactory: A Self-Evolving Framework Through Executable Subagent Accumulation and Reuse
 
+<p align="center">
+  <strong>Accepted at <a href="https://2026.aclweb.org/program/demo/">ACL 2026 System Demonstrations</a></strong>
+</p>
+
 AgentFactory is a self-evolving agent framework that preserves successful task solutions as **executable subagent code** rather than textual experience. These subagents are continuously refined based on execution feedback, becoming increasingly robust and efficient as more tasks are encountered. Since all saved subagents are pure Python code with standardized documentation, they are portable across any Python-capable system.
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2603.18000"><img src="https://img.shields.io/badge/Paper-arXiv-red" alt="Paper"></a>
+  <a href="https://2026.aclweb.org/program/demo/"><img src="https://img.shields.io/badge/Accepted-ACL%202026%20System%20Demonstrations-brightgreen" alt="Accepted at ACL 2026 System Demonstrations"></a>
+  <a href="https://aclanthology.org/2026.acl-demo.81/"><img src="https://img.shields.io/badge/Paper-ACL%20Anthology-blue" alt="Paper on ACL Anthology"></a>
+  <a href="https://arxiv.org/abs/2603.18000"><img src="https://img.shields.io/badge/Preprint-arXiv-red" alt="Preprint on arXiv"></a>
   <a href="https://youtu.be/iKSsuAXJHW0"><img src="https://img.shields.io/badge/Demo-YouTube-blue" alt="Demo Video"></a>
 </p>
 
-> Official implementation of [AgentFactory: A Self-Evolving Framework Through Executable Subagent Accumulation and Reuse](https://arxiv.org/abs/2603.18000).
+> Official implementation of [AgentFactory: A Self-Evolving Framework Through Executable Subagent Accumulation and Reuse](https://aclanthology.org/2026.acl-demo.81/), published in the **ACL 2026 System Demonstrations** proceedings.
 
 <p align="center">
   <img src="figures/pipeline.png" alt="AgentFactory Pipeline" width="100%">
@@ -169,13 +175,24 @@ The `trajectory/` directory contains saved execution trajectories that correspon
 ## Citation
 
 ```bibtex
-@misc{zhang2026agentfactoryselfevolvingframeworkexecutable,
-      title={AgentFactory: A Self-Evolving Framework Through Executable Subagent Accumulation and Reuse}, 
-      author={Zhang Zhang and Shuqi Lu and Hongjin Qian and Di He and Zheng Liu},
-      year={2026},
-      eprint={2603.18000},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2603.18000}, 
+@inproceedings{zhang-etal-2026-agentfactory,
+    title = "{A}gent{F}actory: A Self-Evolving Framework Through Executable Subagent Accumulation and Reuse",
+    author = "Zhang, Zhang  and
+      Lu, Shuqi  and
+      Qian, Hongjin  and
+      He, Di  and
+      Liu, Zheng",
+    editor = "Durrett, Greg  and
+      Jian, Ping",
+    booktitle = "Proceedings of the 64th Annual Meeting of the {A}ssociation for {C}omputational {L}inguistics (Volume 3: System Demonstrations)",
+    month = jul,
+    year = "2026",
+    address = "San Diego, California, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.acl-demo.81/",
+    doi = "10.18653/v1/2026.acl-demo.81",
+    pages = "819--828",
+    ISBN = "979-8-89176-392-0",
+    abstract = "Building LLM-based agents has become increasingly important. Recent works on LLM-based agent self-evolution primarily record successful experiences as textual prompts or reflections, which cannot reliably guarantee efficient task re-execution in complex scenarios. We propose AgentFactory, a new self-evolution paradigm that preserves successful task solutions as executable subagent code rather than textual experience. Crucially, these subagents are continuously refined based on execution feedback, becoming increasingly robust and efficient as more tasks are encountered. Saved subagents are pure Python code with standardized documentation, enabling portability across any Python-capable system. We demonstrate that AgentFactory enables continuous capability accumulation: its library of executable subagents grows and improves over time, progressively reducing the effort required for similar tasks without manual intervention. Our implementation is open-sourced at \url{https://github.com/zzatpku/AgentFactory}, and our demonstration video is available at \url{https://youtu.be/iKSsuAXJHW0}."
 }
 ```
